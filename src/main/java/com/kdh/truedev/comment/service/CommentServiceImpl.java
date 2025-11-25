@@ -63,6 +63,23 @@ public class CommentServiceImpl implements CommentService {
                 result.hasPrevious()
         );
     }
+    @Transactional(readOnly = true)
+    @Override
+    public CommentPageRes getCommentList(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "commentCreatedAt"));
+        Page<Comment> result = commentRepo.findMyCommentsByArticleId(userId,pageable);
+        List<CommentRes> comments = result.getContent().stream().map(c->CommentMapper.toRes(c,userId)).toList();
+
+        return new CommentPageRes(
+                comments,
+                page,
+                size,
+                result.getTotalPages(),
+                result.getTotalElements(),
+                result.hasNext(),
+                result.hasPrevious()
+        );
+    }
 
     @Transactional
     @Override

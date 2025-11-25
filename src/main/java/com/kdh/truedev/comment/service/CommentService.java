@@ -12,5 +12,7 @@ public interface CommentService {
 
     CommentPageRes getCommentList(Long articleId, Long userId, int page, int size);
 
+    CommentPageRes getCommentList(Long userId, int page, int size);
+
     boolean deleteComment(Long articleId, Long commentId, Long userId);
 }

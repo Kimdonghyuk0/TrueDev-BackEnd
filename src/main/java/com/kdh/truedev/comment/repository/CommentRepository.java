@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.repository.query.Param;
+
 
 public interface CommentRepository extends JpaRepository<Comment,Long> {
     Integer countByArticleId(Long articleId);
@@ -30,4 +32,26 @@ public interface CommentRepository extends JpaRepository<Comment,Long> {
             """
     )
     Page<Comment> findCommentsByArticleId(@Param("articleId") Long articleId, Pageable pageable);
+
+    @Query(
+            value = """
+        select c
+        from Comment c
+        join fetch c.user u
+        join c.article a
+        where c.commentIsDelete = false
+          and a.isDeleted = false
+          and u.id = :userId
+        """,
+            countQuery = """
+        select count(c)
+        from Comment c
+        join c.user u
+        join c.article a
+        where c.commentIsDelete = false
+          and a.isDeleted = false
+          and u.id = :userId
+        """
+    )
+    Page<Comment> findMyCommentsByArticleId(@Param("userId") Long userId, Pageable pageable);
 }

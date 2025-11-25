@@ -35,7 +35,7 @@ public class ArticleServiceImpl implements ArticleService {
     private final UserRepository userRepo;
     private final CommentRepository commentRepo;
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public ArticlePageRes list(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "articleCreatedAt"));
@@ -54,7 +54,7 @@ public class ArticleServiceImpl implements ArticleService {
         );
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public ArticlePageRes list(int page, int size, long userId) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "articleCreatedAt"));

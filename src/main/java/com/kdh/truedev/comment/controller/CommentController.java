@@ -35,6 +35,17 @@ public class CommentController {
         var comments = service.getCommentList(articleId,userId,page,size);
         return ResponseEntity.ok(ApiResponse.ok("get_comment_list_success",comments));
     }
+    // 내가 쓴 댓글 목록
+    @Operation(summary = "내가 쓴 댓글 목록")
+    @GetMapping("/articles/MyComments")
+    public ResponseEntity<ApiResponse<CommentPageRes>> getMyCommentsList(@RequestParam(defaultValue = "1")int page){
+        Long userId = authTokenResolver.requireUserId();
+        if (page < 1)  return ResponseEntity.status(BAD_REQUEST).body(ApiResponse.error("invalid_request"));
+        int size = 3;
+        var comments = service.getCommentList(userId,page,size);
+        return ResponseEntity.ok(ApiResponse.ok("get_comment_list_success",comments));
+    }
+
 
     // 댓글 작성
     @Operation(summary = "댓글 작성")
