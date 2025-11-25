@@ -1,6 +1,3 @@
 src/main/resources/templates/* linguist-vendored
 src/main/resources/static/* linguist-vendored
-build/* linguist-vendored
-*.min.js linguist-vendored
-*.css linguist-vendored
-week5/frontend/* linguist-vendored
+build/** linguist-generated
