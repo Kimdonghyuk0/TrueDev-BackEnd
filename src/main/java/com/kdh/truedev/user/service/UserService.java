@@ -21,7 +21,7 @@ public interface UserService {
 
     boolean deleteAccount(Long userId);
 
-    AccountUpdateRes updateAccount(Long userId, AccountUpdateReq req);
+    AccountUpdateRes updateAccount(Long userId, AccountUpdateReq req,MultipartFile profileImage);
 
     void changePassword(Long userId,String currentPassword,String newPassword);
 

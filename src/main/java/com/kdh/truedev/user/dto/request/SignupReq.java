@@ -19,7 +19,6 @@ public record SignupReq(
         String password,
 
         @NotBlank @Size(min = 2, max = 20)
-        String name,
+        String name
 
-        String profileImage
 ) {}

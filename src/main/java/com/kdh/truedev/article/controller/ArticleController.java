@@ -33,8 +33,18 @@ public class ArticleController {
         if (page < 1)  return ResponseEntity.status(BAD_REQUEST).body(ApiResponse.error("invalid_request"));
         int size = 10;
         var articles = service.list(page, size);
-        return ResponseEntity.ok(ApiResponse.ok("post_list_success",articles));
+        return ResponseEntity.ok(ApiResponse.ok("get_list_success",articles));
     }
+    @Operation(summary = "내가 쓴 글 조회")
+    @PostMapping("/myArticles")
+    public ResponseEntity<ApiResponse<ArticlePageRes>> getMyArticlesList(@RequestParam(defaultValue = "1") int page) {
+        Long userId = authTokenResolver.requireUserId();
+        if (page < 1) return ResponseEntity.status(BAD_REQUEST).body(ApiResponse.error("invalid_request"));
+        int size = 3;
+        var articles = service.list(page, size,userId);
+        return ResponseEntity.ok(ApiResponse.ok("get_list_success",articles));
+    }
+
 
     // 작성
     @Operation(summary = "글 작성")

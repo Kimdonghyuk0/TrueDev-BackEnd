@@ -56,6 +56,25 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Transactional
     @Override
+    public ArticlePageRes list(int page, int size, long userId) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "articleCreatedAt"));
+        Page<Article> result = articleRepo.findMyArticleByIsDeletedFalse(userId,pageable);
+        List<ArticleSummaryRes> articleSummaryRes = result.getContent().stream()
+                .map(ArticleMapper::toSummary)   // Article -> ArticleSummaryRes
+                .toList();
+        return new ArticlePageRes(
+                articleSummaryRes,
+                page,
+                size,
+                result.getTotalPages(),
+                result.getTotalElements(),
+                result.hasNext(),
+                result.hasPrevious()
+        );
+    }
+
+    @Transactional
+    @Override
     public ArticleDetailRes create(Long userId, ArticleReq.CreateArticleReq req) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));

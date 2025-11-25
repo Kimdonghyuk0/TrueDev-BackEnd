@@ -11,6 +11,9 @@ import com.kdh.truedev.user.dto.response.LoginUser;
 import com.kdh.truedev.user.service.UserService;
 import com.kdh.truedev.user.support.AuthTokenResolver;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,10 +34,15 @@ public class UserController {
 
     // 회원가입
     @Operation(summary = "회원가입")
-    @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestPart("user")UserReq dto,
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Void>> signup(@Valid @RequestPart("user") UserReq dto,
+                                                    @Parameter(
+                                                            description = "프로필 이미지 (선택)",
+                                                            content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                                                    schema = @Schema(type = "string", format = "binary"))
+                                                    )
                                                     @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
-        service.signup(dto,profileImage);
+        service.signup(dto, profileImage);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.ok("register_success", null));
     }
@@ -53,9 +61,9 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginSuccess>> login(@Valid @RequestBody LoginRequest req) {
 
-            LoginSuccess user = service.login(req.email(), req.password());
+        LoginSuccess user = service.login(req.email(), req.password());
 
-        return ResponseEntity.ok(ApiResponse.ok("login_success",user));
+        return ResponseEntity.ok(ApiResponse.ok("login_success", user));
     }
 
 
@@ -68,24 +76,31 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok("Logout_success", null));
 
     }
+
     //회원탈퇴
     @Operation(summary = "회원탈퇴")
     @SecurityRequirement(name = "BearerAuth")
     @DeleteMapping("/account")
-    public ResponseEntity<ApiResponse<Void>> deleteAccount(){
+    public ResponseEntity<ApiResponse<Void>> deleteAccount() {
         Long userId = authTokenResolver.requireUserId();
         boolean isDeleted = service.deleteAccount(userId);
-        if(!isDeleted)return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("delete_failed"));
-        return ResponseEntity.ok(ApiResponse.ok("delete_success",null));
+        if (!isDeleted) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ApiResponse.error("delete_failed"));
+        return ResponseEntity.ok(ApiResponse.ok("delete_success", null));
     }
 
     // 회원 정보 변경
     @Operation(summary = "회원 정보 변경")
     @SecurityRequirement(name = "BearerAuth")
-    @PatchMapping("/account")
-    public ResponseEntity<ApiResponse<AccountUpdateRes>> updateAccount(@Valid @RequestBody AccountUpdateReq req) {
+    @PatchMapping(path = "/account", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<AccountUpdateRes>> updateAccount(@Valid @RequestPart("user") AccountUpdateReq req,
+                                                                       @Parameter(
+                                                                               description = "프로필 이미지 (선택)",
+                                                                               content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                                                                       schema = @Schema(type = "string", format = "binary"))
+                                                                       )
+                                                                       @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         Long userId = authTokenResolver.requireUserId();
-        AccountUpdateRes updated = service.updateAccount(userId, req);
+        AccountUpdateRes updated = service.updateAccount(userId, req, profileImage);
         if (updated == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(ApiResponse.error("account_update_failed"));
@@ -97,10 +112,10 @@ public class UserController {
     @Operation(summary = "비밀번호 변경")
     @SecurityRequirement(name = "BearerAuth")
     @PatchMapping("/account/password")
-    public ResponseEntity<ApiResponse<Void>> changePassword(String currentPassword,String newPassword){
+    public ResponseEntity<ApiResponse<Void>> changePassword(String currentPassword, String newPassword) {
         Long userId = authTokenResolver.requireUserId();
 
-        service.changePassword(userId,currentPassword,newPassword);
+        service.changePassword(userId, currentPassword, newPassword);
         return ResponseEntity.ok(ApiResponse.ok("password_change_success", null));
 
     }
@@ -112,4 +127,6 @@ public class UserController {
         TokenDto tokenDto = service.reissue(refreshToken);
         return ResponseEntity.ok(ApiResponse.ok("token_reissue_success", tokenDto));
     }
+
 }
+

@@ -6,6 +6,7 @@ import com.kdh.truedev.article.dto.response.ArticlePageRes;
 
 public interface ArticleService {
     ArticlePageRes list(int page, int size);
+    ArticlePageRes list(int page, int size,long userId);
     ArticleDetailRes create(Long userId, ArticleReq.CreateArticleReq req);
     ArticleDetailRes detail(Long userId, Long articleId, boolean increaseViews);
     ArticleDetailRes edit(Long articleId, Long userId, ArticleReq.EditArticleReq req) throws ForbiddenException;

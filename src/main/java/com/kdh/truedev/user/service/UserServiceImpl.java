@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public AccountUpdateRes updateAccount(Long userId, AccountUpdateReq req) {
+    public AccountUpdateRes updateAccount(Long userId, AccountUpdateReq req,MultipartFile profileImage) {
         User user = repo.findById(userId).orElse(null);
         if (user == null) {
             return null;
@@ -109,8 +109,8 @@ public class UserServiceImpl implements UserService {
         if (req.name() != null && !req.name().isBlank()) {
             user.setName(req.name());
         }
-        if (req.profileImage() != null) {
-            user.setProfileImage(req.profileImage());
+        if (profileImage != null && !profileImage.isEmpty()) {
+            user.setProfileImage(uploadImage(profileImage));
         }
         if (req.email()!=null && !req.email().isBlank()){
             user.setEmail(req.email());
