@@ -29,6 +29,8 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JWT를 JSON으로 직렬화/역직렬화 하는데 사용
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
+    implementation "com.cloudinary:cloudinary-http5:2.0.0" // 이미지 업로드용 클라우드
+
     runtimeOnly 'com.mysql:mysql-connector-j'
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
