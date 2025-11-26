@@ -9,11 +9,12 @@ import com.kdh.truedev.user.entity.User;
 
 public class ArticleMapper {
 
-    public static Article toEntity(User user, ArticleReq.CreateArticleReq req) {
+    public static Article toEntity(User user, ArticleReq.CreateArticleReq req,String img_url) {
         return Article.builder()
                 .user(user)
                 .title(req.title())
                 .content(req.content())
+                .image(img_url)
                 .build();
     }
 
@@ -30,7 +31,8 @@ public class ArticleMapper {
                 a.getCommentCount(),
                 a.getArticleCreatedAt(),
                 a.getArticleEditedAt(),
-                new AuthorRes(authorName, authorImg)
+                new AuthorRes(authorName, authorImg),
+                a.getImage()
         );
     }
 
@@ -48,7 +50,8 @@ public class ArticleMapper {
                 a.getArticleEditedAt(),
                 new AuthorRes(authorName, authorImg),
                 likedByMe,
-                isAuthor
+                isAuthor,
+                a.getImage()
         );
     }
 

@@ -15,5 +15,7 @@ public record ArticleSummaryRes(
         Integer commentCount,
         LocalDateTime createdAt,
         LocalDateTime editedAt,
-        AuthorRes author
+        AuthorRes author,
+        String image
+
 ) {}

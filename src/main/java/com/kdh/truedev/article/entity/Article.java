@@ -35,6 +35,10 @@ public class Article {
     private String content;
 
     @Setter
+    @Column
+    private String image;
+
+    @Setter
     @Column(name = "like_count")
     @Builder.Default
     private Integer likeCount = 0;

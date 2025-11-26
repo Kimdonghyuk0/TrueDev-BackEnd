@@ -17,5 +17,6 @@ public record ArticleDetailRes(
         LocalDateTime editedAt,
         AuthorRes author,
         boolean likedByMe,
-        boolean isAuthor //현재 유저가 작성한 글인지
+        boolean isAuthor, //현재 유저가 작성한 글인지
+        String image // 업로드한 이미지 (추후에 리스트로 변경 예정)
 ) {}

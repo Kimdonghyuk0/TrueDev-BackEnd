@@ -5,13 +5,18 @@ import com.kdh.truedev.article.dto.response.ArticlePageRes;
 import com.kdh.truedev.article.service.ArticleService;
 import com.kdh.truedev.article.dto.request.ArticleReq;
 import com.kdh.truedev.article.dto.response.ApiResponse;
+import com.kdh.truedev.user.dto.request.AccountUpdateReq;
 import com.kdh.truedev.user.support.AuthTokenResolver;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -48,12 +53,20 @@ public class ArticleController {
 
     // 작성
     @Operation(summary = "글 작성")
-    @PostMapping("/articles")
-    public ResponseEntity<ApiResponse<ArticleDetailRes>> create(@Valid @RequestBody ArticleReq.CreateArticleReq req) {
+    @PostMapping(value = "/articles", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ArticleDetailRes>> create(@Valid @RequestPart("article") ArticleReq.CreateArticleReq req,
+                                                                @Parameter(
+                                                                        description = "첨부 이미지 (선택)",
+                                                                        content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                                                                schema = @Schema(type = "string", format = "binary"))
+                                                                )
+                                                                @RequestPart(value = "profileImage", required = false)
+                                                                MultipartFile profileImage) {
         Long userId = authTokenResolver.requireUserId();
-        var a = service.create(userId, req);
+        var a = service.create(userId, req, profileImage);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok("post_created_success", a));
     }
+
 
     // 상세
     @Operation(summary = "게시글 조회")
@@ -68,12 +81,19 @@ public class ArticleController {
 
     // 수정
     @Operation(summary = "게시글 수정")
-    @PatchMapping("/articles/{article_id}")
+    @PatchMapping(value = "/articles/{article_id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ArticleDetailRes>> edit(@PathVariable("article_id") Long id,
-                                       @Valid @RequestBody ArticleReq.EditArticleReq req) {
+                                       @Valid @RequestPart("article") ArticleReq.EditArticleReq req,
+                                                              @Parameter(
+                                                                      description = "프로필 이미지 (선택)",
+                                                                      content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE,
+                                                                              schema = @Schema(type = "string", format = "binary"))
+                                                              )
+                                                                  @RequestPart(value = "profileImage", required = false)
+                                                                  MultipartFile profileImage ) {
         try {
             Long userId = authTokenResolver.requireUserId();
-            var editedArticle = service.edit(id, userId, req);
+            var editedArticle = service.edit(id, userId, req,profileImage);
             if (editedArticle == null)  return ResponseEntity.status(NOT_FOUND).body(ApiResponse.error("Edited_failed"));
 
             return ResponseEntity.ok(ApiResponse.ok("Edited_success",editedArticle));
