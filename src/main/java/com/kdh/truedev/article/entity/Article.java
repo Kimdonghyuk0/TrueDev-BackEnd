@@ -30,7 +30,7 @@ public class Article {
     private String title;
 
     @Setter
-    @Column
+    @Column(columnDefinition = "LONGTEXT")
     @Lob
     private String content;
 
@@ -63,6 +63,22 @@ public class Article {
     @Column
     @Builder.Default
     private Boolean isDeleted =false;
+
+    @Setter
+    @Column(columnDefinition = "LONGTEXT")
+    @Lob
+    private String aiMessage;
+
+    @Column
+    @Setter
+    private boolean isVerified;
+
+    @Column
+    @Builder.Default
+    @Setter
+    private boolean isCheck = false;
+
+
 
     // 증감/삭제 매서드
     public void increaseView() {

@@ -32,7 +32,10 @@ public class ArticleMapper {
                 a.getArticleCreatedAt(),
                 a.getArticleEditedAt(),
                 new AuthorRes(authorName, authorImg),
-                a.getImage()
+                a.getImage(),
+                a.isVerified(),
+                a.isCheck(),
+                a.getAiMessage()
         );
     }
 
@@ -51,7 +54,10 @@ public class ArticleMapper {
                 new AuthorRes(authorName, authorImg),
                 likedByMe,
                 isAuthor,
-                a.getImage()
+                a.getImage(),
+                a.getAiMessage(),
+                a.isVerified(),
+                a.isCheck()
         );
     }
 

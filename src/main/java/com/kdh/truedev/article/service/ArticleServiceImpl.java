@@ -20,12 +20,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +41,9 @@ public class ArticleServiceImpl implements ArticleService {
     private final UserRepository userRepo;
     private final CommentRepository commentRepo;
     private final UserService userService;
+    @Value("${factchecker.url:http://localhost:8001/fact-check}")
+    private String factCheckerUrl;
+    private final RestTemplate restTemplate = new RestTemplate();
     @Transactional(readOnly = true)
     @Override
     public ArticlePageRes list(int page, int size) {
@@ -117,6 +124,38 @@ public class ArticleServiceImpl implements ArticleService {
         boolean isAuthor = userId != null && articleRepo.existsByIdAndUserId(articleId,userId); //내가 게시글을 작성했는지
         return ArticleMapper.toArticleDetail(article,likedByMe,isAuthor) ;
     }
+
+    @Transactional
+    @Override
+    public ArticleDetailRes verify(Long articleId, Long userId) throws ForbiddenException {
+        Article article = articleRepo.findById(articleId).orElse(null);
+        if (article == null) return null;
+        if (!Objects.equals(article.getUser().getId(), userId)) throw new ForbiddenException();
+
+        String text = "제목: " + article.getTitle() + "\n내용: " + article.getContent();
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    factCheckerUrl,
+                    Map.of("text", text),
+                    Map.class
+            );
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map body = response.getBody();
+                Object data = body.containsKey("isFact") ? body : body.get("data");
+                Map<?, ?> parsed = (Map<?, ?>) data;
+                boolean isFact = Boolean.TRUE.equals(parsed.get("isFact"));
+                String aiComment = parsed.get("aiComment") != null ? parsed.get("aiComment").toString() : "";
+                article.setVerified(isFact);
+                article.setAiMessage(aiComment);
+                article.setCheck(true);
+            }
+        } catch (Exception e) {
+            // 실패 시 isCheck는 false 그대로 두고 메시지도 유지
+        }
+        boolean likedByMe = userId != null && likesRepo.existsByArticleIdAndUserId(articleId,userId);
+        boolean isAuthor = userId != null && articleRepo.existsByIdAndUserId(articleId,userId);
+        return ArticleMapper.toArticleDetail(article, likedByMe, isAuthor);
+    }
     
     @Transactional
     @Override
@@ -153,5 +192,15 @@ public class ArticleServiceImpl implements ArticleService {
         Article aRef = em.getReference(Article.class, articleId);
         aRef.setLikeCount(likesRepo.countByArticleId(articleId));
         return true;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public com.kdh.truedev.article.dto.response.ArticleStatRes stats() {
+        long total = articleRepo.countByIsDeletedFalse();
+        long verified = articleRepo.countByIsVerifiedTrueAndIsDeletedFalse();
+        long pending = articleRepo.countByIsCheckFalseAndIsDeletedFalse();
+        long failed = articleRepo.countByIsCheckTrueAndIsVerifiedFalseAndIsDeletedFalse();
+        return new com.kdh.truedev.article.dto.response.ArticleStatRes(verified, pending, failed, total);
     }
 }

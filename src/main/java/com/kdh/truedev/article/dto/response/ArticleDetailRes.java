@@ -1,6 +1,7 @@
 package com.kdh.truedev.article.dto.response;
 
 import com.kdh.truedev.base.dto.response.AuthorRes;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -18,5 +19,10 @@ public record ArticleDetailRes(
         AuthorRes author,
         boolean likedByMe,
         boolean isAuthor, //현재 유저가 작성한 글인지
-        String image // 업로드한 이미지 (추후에 리스트로 변경 예정)
+        String image, // 업로드한 이미지 (추후에 리스트로 변경 예정)
+        String aiMessage,
+        @JsonProperty("isVerified")
+        boolean isVerified,
+        @JsonProperty("isCheck")
+        boolean isCheck
 ) {}

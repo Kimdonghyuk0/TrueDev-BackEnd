@@ -2,6 +2,7 @@ package com.kdh.truedev.article.dto.response;
 
 
 import com.kdh.truedev.base.dto.response.AuthorRes;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,11 @@ public record ArticleSummaryRes(
         LocalDateTime createdAt,
         LocalDateTime editedAt,
         AuthorRes author,
-        String image
+        String image,
+        @JsonProperty("isVerified")
+        Boolean isVerified,
+        @JsonProperty("isCheck")
+        Boolean isCheck,
+        String aiMessage
 
 ) {}

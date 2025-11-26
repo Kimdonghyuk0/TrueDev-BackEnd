@@ -42,4 +42,9 @@ public interface ArticleRepository extends JpaRepository<Article,Long> {
     Page<Article> findMyArticleByIsDeletedFalse(@Param("userId") Long userId,
                                                 Pageable pageable);
     boolean existsByIdAndUserId(Long ArticleId, Long UserId);
+
+    long countByIsDeletedFalse();
+    long countByIsVerifiedTrueAndIsDeletedFalse();
+    long countByIsCheckFalseAndIsDeletedFalse();
+    long countByIsCheckTrueAndIsVerifiedFalseAndIsDeletedFalse();
 }

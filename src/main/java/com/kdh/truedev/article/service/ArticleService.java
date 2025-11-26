@@ -12,10 +12,13 @@ public interface ArticleService {
     ArticleDetailRes detail(Long userId, Long articleId, boolean increaseViews);
     ArticleDetailRes edit(Long articleId, Long userId, ArticleReq.EditArticleReq req,MultipartFile profileImage) throws ForbiddenException;
     boolean delete(Long articleId,Long userId);
+    ArticleDetailRes verify(Long articleId, Long userId) throws ForbiddenException;
 
     //  좋아요/취소
     boolean like(Long articleId, Long userId);
     boolean unlike(Long articleId, Long userId);
+
+    com.kdh.truedev.article.dto.response.ArticleStatRes stats();
 
     class ForbiddenException extends RuntimeException {}
 }
