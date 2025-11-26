@@ -13,7 +13,7 @@ Spring Boot 기반 REST API와 로컬 LLM(FastAPI + Ollama gemma4b)을 연동해
 
 ## 시스템 아키텍쳐
 
-<img width="1260" height="891" alt="TrueDev시스템아키텍쳐" src="https://github.com/user-attachments/assets/2cee666b-35fa-446a-be8c-6811a806e032" />
+<img width="1260" height="891" alt="TrueDev시스템-아키텍쳐-001" src="https://github.com/user-attachments/assets/effefaa7-d52b-4fd0-8753-7b9cf526b75c" />
 
 ---
 
