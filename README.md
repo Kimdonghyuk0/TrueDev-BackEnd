@@ -1,11 +1,11 @@
 # TrueDev Backend 
 
 **TrueDev**는 “가짜 정보 없는 커뮤니티”를 목표로 하는 서비스의 백엔드 모듈입니다.  
-Spring Boot 기반 REST API와 로컬 LLM(FastAPI + Ollama gemma4b)을 연동해, 게시글과 댓글을 AI로 검증합니다.
+Spring Boot 기반 REST API와 로컬 LLM(FastAPI + Ollama gemma3:4b)을 연동해, 게시글과 댓글을 AI로 검증합니다.
 
 ---
 
-## 🎥 Demo Video
+## 🎥 시연영상
 
 [![Demo Video](https://img.youtube.com/vi/cdkhMjvxTyM/0.jpg)](https://youtu.be/cdkhMjvxTyM?si=Bd4gksLox7sQPeRb)
 
