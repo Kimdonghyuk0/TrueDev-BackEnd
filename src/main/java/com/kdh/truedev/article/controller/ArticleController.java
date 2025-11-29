@@ -92,29 +92,21 @@ public class ArticleController {
                                                               )
                                                                   @RequestPart(value = "profileImage", required = false)
                                                                   MultipartFile profileImage ) {
-        try {
-            Long userId = authTokenResolver.requireUserId();
-            var editedArticle = service.edit(id, userId, req,profileImage);
-            if (editedArticle == null)  return ResponseEntity.status(NOT_FOUND).body(ApiResponse.error("Edited_failed"));
+        Long userId = authTokenResolver.requireUserId();
+        var editedArticle = service.edit(id, userId, req, profileImage);
+        if (editedArticle == null)  return ResponseEntity.status(NOT_FOUND).body(ApiResponse.error("Edited_failed"));
 
-            return ResponseEntity.ok(ApiResponse.ok("Edited_success",editedArticle));
-        } catch (ArticleService.ForbiddenException e) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("FORBIDDEN - 게시글 수정 권한 없음"));
-        }
+        return ResponseEntity.ok(ApiResponse.ok("Edited_success",editedArticle));
     }
 
     // 삭제
     @Operation(summary = "게시글 삭제")
     @DeleteMapping("/articles/{article_id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("article_id") Long articleId) {
-       try{
-           Long userId = authTokenResolver.requireUserId();
-           boolean isDelete = service.delete(articleId,userId);
-           if (!isDelete) return ResponseEntity.status(BAD_REQUEST).body(ApiResponse.error("Delete_failed"));
-           return ResponseEntity.ok(ApiResponse.ok("Delete_Success"));
-       } catch (ArticleService.ForbiddenException e){
-           return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiResponse.error("FORBIDDEN - 게시글 삭제 권한 없음"));
-       }
+       Long userId = authTokenResolver.requireUserId();
+       boolean isDelete = service.delete(articleId,userId);
+       if (!isDelete) return ResponseEntity.status(BAD_REQUEST).body(ApiResponse.error("Delete_failed"));
+       return ResponseEntity.ok(ApiResponse.ok("Delete_Success"));
 
     }
 

@@ -1,6 +1,7 @@
 package com.kdh.truedev.exception;
 
 import com.kdh.truedev.base.dto.response.ApiResponse;
+import com.kdh.truedev.article.service.ArticleService;
 import com.kdh.truedev.springSecurity.exception.InvalidRefreshTokenException;
 import com.kdh.truedev.springSecurity.exception.InvalidTokenException;
 import com.kdh.truedev.user.service.UserService;
@@ -57,5 +58,11 @@ public class ApiErrorHandler {
         // 잘못되었거나 만료된 토큰 → 401
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(ArticleService.ForbiddenException.class)
+    public ResponseEntity<ApiResponse<Void>> handleArticleForbidden(ArticleService.ForbiddenException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error("forbidden"));
     }
 }

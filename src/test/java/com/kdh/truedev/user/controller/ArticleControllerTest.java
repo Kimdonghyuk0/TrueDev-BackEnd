@@ -8,6 +8,7 @@ import com.kdh.truedev.article.service.ArticleService;
 import com.kdh.truedev.base.dto.response.AuthorRes;
 import com.kdh.truedev.exception.ApiErrorHandler;
 import com.kdh.truedev.user.support.AuthTokenResolver;
+import com.kdh.truedev.user.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
