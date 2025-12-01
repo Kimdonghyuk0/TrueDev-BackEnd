@@ -11,8 +11,8 @@ public class ArticleReq {
     ) {}
     @Schema(name = "글 수정 요청")
     public record EditArticleReq(
-            String title,
-            String content
+            @NotBlank String title,
+            @NotBlank String content
     ) {}
 
 }
