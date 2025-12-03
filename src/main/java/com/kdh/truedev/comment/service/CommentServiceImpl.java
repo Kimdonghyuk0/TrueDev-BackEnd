@@ -102,7 +102,7 @@ public class CommentServiceImpl implements CommentService {
         }
         if ( !comment.getArticle().getId().equals(articleId)) return false;
         if (!comment.getUser().getId().equals(userId)) return false;
-        int deleted = commentRepo.softDeleteIfNotDeleted(commentId);
+        int deleted = commentRepo.softDeleteIfNotDeleted(commentId); //DB에서 확실하게 소프트 삭제
         if (deleted == 0) {
             // 이미 누가 먼저 삭제함
             return false;
