@@ -1,8 +1,10 @@
 package com.kdh.truedev.article.service;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kdh.truedev.article.dto.response.ArticleDetailRes;
 import com.kdh.truedev.article.dto.response.ArticlePageRes;
+import com.kdh.truedev.article.dto.response.ArticleStatRes;
 import com.kdh.truedev.article.dto.response.ArticleSummaryRes;
 import com.kdh.truedev.article.mapper.ArticleMapper;
 import com.kdh.truedev.article.Likes.entity.Likes;
@@ -17,17 +19,24 @@ import com.kdh.truedev.user.service.UserService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 
@@ -41,6 +50,13 @@ public class ArticleServiceImpl implements ArticleService {
     private final UserRepository userRepo;
     private final CommentRepository commentRepo;
     private final UserService userService;
+
+    @Value("${factchecker.url:http://localhost:8001/fact-check}")
+    private String factCheckerUrl;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+
     @Transactional(readOnly = true)
     @Override
     public ArticlePageRes list(int page, int size) {
@@ -123,7 +139,7 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Transactional
     @Override
-    public ArticleDetailRes edit(Long articleId, Long userId, ArticleReq.EditArticleReq req,MultipartFile profileImage) throws ForbiddenException {
+    public ArticleDetailRes edit(Long articleId, Long userId, ArticleReq.EditArticleReq req,MultipartFile profileImage){
         Article article = articleRepo.findById(articleId).orElseThrow(() -> new IllegalArgumentException("not_found_article"));
         if (Boolean.TRUE.equals(article.getIsDeleted())) {
             throw new IllegalArgumentException("not_found_article");
@@ -200,4 +216,61 @@ public class ArticleServiceImpl implements ArticleService {
         if (updated == 0) throw new IllegalArgumentException("not_found_article");
         return true;
     }
+    @Transactional
+    @Override
+    public ArticleDetailRes verify(Long articleId, Long userId) {
+        Article article = articleRepo.findById(articleId).orElse(null);
+        if (article == null) return null;
+        if (!Objects.equals(article.getUser().getId(), userId)) throw new ForbiddenException();
+
+        String text = "제목: " + article.getTitle() + "\n내용: " + article.getContent();
+        try {
+            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(Map.of("text", text));
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    factCheckerUrl,
+                    HttpMethod.POST,
+                    requestEntity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, Object> body = response.getBody();
+                // FastAPI 응답은 {"isFact": bool, "aiComment": string} 형식
+                Map<String, Object> payload = asMapOrEmpty(body);
+                boolean isFact = Boolean.TRUE.equals(payload.get("isFact"));
+                String aiComment = payload.get("aiComment") != null ? payload.get("aiComment").toString().trim() : "";
+
+                // 더티 체킹
+                article.setVerified(isFact);
+                article.setCheck(true);
+                article.setAiMessage(aiComment);
+            }
+        } catch (Exception e) {
+            // 실패 시 isCheck는 false 그대로 두고 메시지도 유지
+        }
+        boolean likedByMe = userId != null && likesRepo.existsByArticleIdAndUserId(articleId,userId);
+        boolean isAuthor = userId != null && articleRepo.existsByIdAndUserId(articleId,userId);
+        return ArticleMapper.toArticleDetail(article, likedByMe, isAuthor);
+    }
+
+    @Override
+    public ArticleStatRes stats() {
+        long total = articleRepo.countByIsDeletedFalse();
+        long verified = articleRepo.countVerifiedComputed();
+        long pending = articleRepo.countPendingComputed();
+        long failed = articleRepo.countFailedComputed();
+        return new ArticleStatRes(verified, pending, failed, total);
+    }
+
+
+    private Map<String, Object> asMapOrEmpty(Object src) {
+        if (src instanceof Map<?, ?> map) {
+            return map.entrySet().stream()
+                    .collect(java.util.stream.Collectors.toMap(
+                            e -> String.valueOf(e.getKey()),
+                            Map.Entry::getValue
+                    ));
+        }
+        return Map.of();
+    }
+
 }

@@ -3,6 +3,9 @@
 /shelf/
 /workspace.xml
 /build/
+
+FastApi_AI/.venv/
+
 # Editor-based HTTP Client requests
 /httpRequests/
 

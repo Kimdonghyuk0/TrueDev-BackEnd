@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 
 public interface ArticleRepository extends JpaRepository<Article,Long> {
@@ -63,4 +64,25 @@ public interface ArticleRepository extends JpaRepository<Article,Long> {
     @Modifying(clearAutomatically = true)
     @Query("update Article a set a.commentCount = a.commentCount - 1 where a.id = :id")
     int decrementCommentCount(@Param("id") Long id);
+
+    long countByIsDeletedFalse();
+
+
+    @Query("""
+      select count(a) from Article a
+      where a.isDeleted = false
+        and a.isVerified = true
+    """)
+    long countVerifiedComputed();
+
+    @Query("select count(a) from Article a where a.isDeleted = false and a.isCheck = false")
+    long countPendingComputed();
+
+    @Query("""
+      select count(a) from Article a
+      where a.isDeleted = false
+        and a.isCheck = true
+        and a.isVerified = false
+    """)
+    long countFailedComputed();
 }

@@ -18,7 +18,6 @@ public class ArticleMapper {
                 .build();
     }
 
-
     public static ArticleSummaryRes toSummary(Article a) {
         String authorName = a.getUser() != null ? a.getUser().getName() : "";
         String authorImg  = a.getUser() != null && a.getUser().getProfileImage() != null
@@ -32,7 +31,10 @@ public class ArticleMapper {
                 a.getArticleCreatedAt(),
                 a.getArticleEditedAt(),
                 new AuthorRes(authorName, authorImg),
-                a.getImage()
+                a.getImage(),
+                a.isVerified(),
+                a.isCheck(),
+                a.getAiMessage()
         );
     }
 
@@ -44,14 +46,17 @@ public class ArticleMapper {
                 a.getTitle(),
                 a.getContent(),
                 a.getLikeCount(),
-                a.getViewCount()+1,
+                a.getViewCount(),
                 a.getCommentCount(),
                 a.getArticleCreatedAt(),
                 a.getArticleEditedAt(),
                 new AuthorRes(authorName, authorImg),
                 likedByMe,
                 isAuthor,
-                a.getImage()
+                a.getImage(),
+                a.getAiMessage(),
+                a.isVerified(),
+                a.isCheck()
         );
     }
 

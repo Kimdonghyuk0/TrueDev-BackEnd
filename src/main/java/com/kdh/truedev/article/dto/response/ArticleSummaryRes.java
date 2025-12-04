@@ -16,6 +16,9 @@ public record ArticleSummaryRes(
         LocalDateTime createdAt,
         LocalDateTime editedAt,
         AuthorRes author,
-        String image
+        String image,
+        boolean isVerified,
+        boolean isCheck,
+        String aiMessage
 
 ) {}

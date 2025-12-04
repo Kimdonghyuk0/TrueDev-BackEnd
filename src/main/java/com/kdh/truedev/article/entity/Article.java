@@ -64,6 +64,22 @@ public class Article {
     @Builder.Default
     private Boolean isDeleted =false;
 
+    @Setter
+    @Column(columnDefinition = "LONGTEXT")
+    @Lob
+    private String aiMessage; // AI피드백 메시지 (isVerifi
+
+    // ed = false일 경우)
+
+    @Column
+    @Setter
+    private boolean isVerified;// AI로부터 팩트체크를 받았는지
+
+    @Column
+    @Builder.Default
+    @Setter
+    private boolean isCheck = false; //AI 검증 api를 성공적으로 호출했는지 여부
+
     public void softDelete() { this.isDeleted = true; }
 
 
