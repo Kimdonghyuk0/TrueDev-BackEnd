@@ -1,7 +1,6 @@
 package com.kdh.truedev.article.service;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kdh.truedev.article.dto.response.ArticleDetailRes;
 import com.kdh.truedev.article.dto.response.ArticlePageRes;
 import com.kdh.truedev.article.dto.response.ArticleStatRes;
@@ -12,6 +11,7 @@ import com.kdh.truedev.article.Likes.repository.LikesRepository;
 import com.kdh.truedev.article.dto.request.ArticleReq;
 import com.kdh.truedev.article.entity.Article;
 import com.kdh.truedev.article.repository.ArticleRepository;
+import com.kdh.truedev.article.verify.VerifyProducer;
 import com.kdh.truedev.comment.repository.CommentRepository;
 import com.kdh.truedev.user.entity.User;
 import com.kdh.truedev.user.repository.UserRepository;
@@ -19,21 +19,15 @@ import com.kdh.truedev.user.service.UserService;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -48,13 +42,8 @@ public class ArticleServiceImpl implements ArticleService {
     private final ArticleRepository articleRepo;
     private final LikesRepository likesRepo;
     private final UserRepository userRepo;
-    private final CommentRepository commentRepo;
     private final UserService userService;
-
-    @Value("${factchecker.url:http://localhost:8001/fact-check}")
-    private String factCheckerUrl;
-    private final RestTemplate restTemplate = new RestTemplate();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final VerifyProducer verifyProducer;
 
 
     @Transactional(readOnly = true)
@@ -216,40 +205,15 @@ public class ArticleServiceImpl implements ArticleService {
         if (updated == 0) throw new IllegalArgumentException("not_found_article");
         return true;
     }
-    @Transactional
     @Override
-    public ArticleDetailRes verify(Long articleId, Long userId) {
-        Article article = articleRepo.findById(articleId).orElse(null);
-        if (article == null) return null;
+    public String enqueueVerify(Long articleId, Long userId) {
+        Article article = articleRepo.findById(articleId).orElseThrow(() -> new IllegalArgumentException("not_found_article"));
+        // 로그인한 사용자라면 본인 글만, 아니면 건너뜀
+        if (userId == null) throw new UserService.UnauthorizedException();
         if (!Objects.equals(article.getUser().getId(), userId)) throw new ForbiddenException();
-
-        String text = "제목: " + article.getTitle() + "\n내용: " + article.getContent();
-        try {
-            HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(Map.of("text", text));
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    factCheckerUrl,
-                    HttpMethod.POST,
-                    requestEntity,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
-            );
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                Map<String, Object> body = response.getBody();
-                // FastAPI 응답은 {"isFact": bool, "aiComment": string} 형식
-                Map<String, Object> payload = asMapOrEmpty(body);
-                boolean isFact = Boolean.TRUE.equals(payload.get("isFact"));
-                String aiComment = payload.get("aiComment") != null ? payload.get("aiComment").toString().trim() : "";
-
-                // 더티 체킹
-                article.setVerified(isFact);
-                article.setCheck(true);
-                article.setAiMessage(aiComment);
-            }
-        } catch (Exception e) {
-            // 실패 시 isCheck는 false 그대로 두고 메시지도 유지
-        }
-        boolean likedByMe = userId != null && likesRepo.existsByArticleIdAndUserId(articleId,userId);
-        boolean isAuthor = userId != null && articleRepo.existsByIdAndUserId(articleId,userId);
-        return ArticleMapper.toArticleDetail(article, likedByMe, isAuthor);
+        if (Boolean.TRUE.equals(article.getIsDeleted())) throw new IllegalArgumentException("not_found_article");
+        Long ownerId = article.getUser().getId();
+        return verifyProducer.publish(articleId, ownerId);
     }
 
     @Override

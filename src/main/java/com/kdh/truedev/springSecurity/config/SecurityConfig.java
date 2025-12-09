@@ -47,6 +47,9 @@ public class SecurityConfig {
                                 "/users/login",
                                 "/users/token/refresh",
                                 "/auth/**",
+                                "/sse/verify",
+                                "/articles/*/verify",
+                                "/articles/stats",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**")
@@ -58,8 +61,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {

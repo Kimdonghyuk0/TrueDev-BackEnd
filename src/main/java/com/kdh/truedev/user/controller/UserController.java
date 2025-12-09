@@ -64,7 +64,18 @@ public class UserController {
 
         LoginSuccess user = service.login(req.email(), req.password());
 
-        return ResponseEntity.ok(ApiResponse.ok("login_success", user));
+        long maxAgeSeconds = Math.max(1, (user.token().accessTokenExpiresIn() - System.currentTimeMillis()) / 1000);
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", user.token().accessToken())
+                .httpOnly(true)
+                .secure(false) // 로컬 개발용. HTTPS 배포 시 true 로 변경
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(maxAgeSeconds)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .body(ApiResponse.ok("login_success", user));
     }
 
 
@@ -129,4 +140,3 @@ public class UserController {
     }
 
 }
-

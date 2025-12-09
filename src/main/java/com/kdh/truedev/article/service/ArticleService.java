@@ -18,7 +18,7 @@ public interface ArticleService {
     boolean like(Long articleId, Long userId);
     boolean unlike(Long articleId, Long userId);
 
-    ArticleDetailRes verify(Long id, Long userId);
+    String enqueueVerify(Long id, Long userId);
     ArticleStatRes stats();
 
     //권한없음 예외처리

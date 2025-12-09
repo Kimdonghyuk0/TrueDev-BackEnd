@@ -1,11 +1,11 @@
 package com.kdh.truedev.article.controller;
 
-import com.kdh.truedev.article.dto.response.ArticleDetailRes;
 import com.kdh.truedev.article.dto.response.ArticleStatRes;
 import com.kdh.truedev.article.service.ArticleService;
 import com.kdh.truedev.base.dto.response.ApiResponse;
 import com.kdh.truedev.user.support.AuthTokenResolver;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,20 +18,18 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
+@SecurityRequirement(name = "BearerAuth")
 public class ArticleAiVerificationController {
     private final ArticleService service;
     private final AuthTokenResolver authTokenResolver;
 
     @Operation(summary = "게시글 AI 검증")
     @PostMapping("/articles/{article_id}/verify")
-    public ResponseEntity<ApiResponse<ArticleDetailRes>> verify(@PathVariable("article_id") Long id) {
+    public ResponseEntity<ApiResponse<String>> verify(@PathVariable("article_id") Long id) {
         try {
-            Long userId = authTokenResolver.requireUserId();
-            var verified = service.verify(id, userId);
-            if (verified == null) {
-                return ResponseEntity.status(NOT_FOUND).body(ApiResponse.error("verify_failed"));
-            }
-            return ResponseEntity.ok(ApiResponse.ok("verify_success", verified));
+            Long userId = authTokenResolver.resolveUserIdIfPresent();
+            var jobId = service.enqueueVerify(id, userId);
+            return ResponseEntity.accepted().body(ApiResponse.ok("verify_enqueued", jobId));
         } catch (ArticleService.ForbiddenException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(ApiResponse.error("FORBIDDEN - 게시글 검증 권한 없음"));
