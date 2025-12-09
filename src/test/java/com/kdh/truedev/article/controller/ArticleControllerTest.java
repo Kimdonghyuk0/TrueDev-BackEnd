@@ -123,7 +123,8 @@ public class ArticleControllerTest {
                 1L, "t", "c", 0, 0, 0,
                 LocalDateTime.now(), LocalDateTime.now(),
                 new AuthorRes("tester", null),
-                false, true, null
+                false, true, null,
+                "", false, false
         );
         given(authTokenResolver.requireUserId()).willReturn(1L);
         given(articleService.create(eq(1L), any(), any())).willReturn(detail);
@@ -147,7 +148,8 @@ public class ArticleControllerTest {
                 1L, "t", "c", 0, 0, 0,
                 LocalDateTime.now(), LocalDateTime.now(),
                 new AuthorRes("tester", null),
-                false, true, null
+                false, true, null,
+                "", false, false
         );
         given(authTokenResolver.requireUserId()).willReturn(1L);
         given(articleService.create(eq(1L), any(), any())).willReturn(detail);
@@ -189,7 +191,6 @@ public class ArticleControllerTest {
         verifyNoInteractions(articleService);
     }
 
-
     @Test
     void 게시글_조회_200() throws Exception {
         given(authTokenResolver.resolveUserIdIfPresent()).willReturn(1L);
@@ -197,7 +198,8 @@ public class ArticleControllerTest {
                 1L, "t", "c", 0, 0, 0,
                 LocalDateTime.now(), LocalDateTime.now(),
                 new AuthorRes("tester", null),
-                false, true, null
+                false, true, null,
+                "", false, false
         );
         given(articleService.detail(eq(1L), eq(1L))).willReturn(detail);
 
@@ -208,6 +210,7 @@ public class ArticleControllerTest {
 
         verify(authTokenResolver).resolveUserIdIfPresent();
         verify(articleService).detail(eq(1L), eq(1L));
+        verify(articleService).increaseViewCount(eq(1L));
         verifyNoMoreInteractions(articleService);
     }
 
@@ -223,8 +226,10 @@ public class ArticleControllerTest {
 
         verify(articleService).detail(eq(1L), eq(99L));
         verifyNoMoreInteractions(articleService);
+        verifyNoMoreInteractions(articleService);
         verify(authTokenResolver).resolveUserIdIfPresent();
     }
+
 
     @Test
     void 게시글_수정_이미지없음_200() throws Exception{
@@ -241,7 +246,8 @@ public class ArticleControllerTest {
                 new AuthorRes("tester", null), // author
                 true,                      // likedByMe
                 true,                      // isAuthor
-                null                       // image
+                null,                      // image
+                "", false, false
         );
         given(articleService.edit(eq(10L), eq(1L), any(), isNull())).willReturn(edited);
 
@@ -276,7 +282,8 @@ public class ArticleControllerTest {
                 new AuthorRes("tester", null), // author
                 true,                      // likedByMe
                 true,                      // isAuthor
-                null                       // image
+                null,                      // image
+                "", false, false
         );
         given(articleService.edit(eq(10L), eq(1L), any(), any())).willReturn(edited);
 

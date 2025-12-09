@@ -170,11 +170,13 @@ class ArticleServiceTest {
         when(likesRepo.existsByArticleIdAndUserId(10L, 1L)).thenReturn(true);
         when(articleRepo.findById(10L)).thenReturn(java.util.Optional.of(baseArticle));
         when(userRepo.findById(1L)).thenReturn(java.util.Optional.of(baseUser));
+        when(likesRepo.deleteByArticleIdAndUserId(10L, 1L)).thenReturn(1);
         when(articleRepo.decrementLikeCount(10L)).thenReturn(1);
 
         boolean result = articleService.unlike(10L, 1L);
 
         assertThat(result).isTrue();
+
         verify(likesRepo).existsByArticleIdAndUserId(10L, 1L);
         verify(likesRepo).deleteByArticleIdAndUserId(10L, 1L);
         verify(articleRepo).decrementLikeCount(10L);
