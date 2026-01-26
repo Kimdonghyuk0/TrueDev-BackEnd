@@ -3,6 +3,10 @@
 **TrueDev**는 “가짜 정보 없는 커뮤니티”를 목표로 하는 서비스의 백엔드 모듈입니다.  
 Spring Boot 기반 REST API와 로컬 LLM(FastAPI + Ollama gemma3:4b)을 연동해, 게시글과 댓글을 AI로 검증합니다.
 
+## 🔗 Repository Links
+
+- Backend: https://github.com/Kimdonghyuk0/TrueDev-Backend
+- Frontend: https://github.com/Kimdonghyuk0/TrueDev-FrontEnd-
 ---
 
 ## 🎥 시연영상
@@ -106,5 +110,5 @@ trueDev/
 │  │      ├─ application.yml     # DB/Redis/LLM/FastAPI, Cloudinary 설정
 │  │
 │  └─ test/java/...              # 테스트 코드
-└─ README.md                     # (이 문서)
+└─ README.md                 
 
