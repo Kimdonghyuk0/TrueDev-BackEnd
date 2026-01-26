@@ -73,7 +73,7 @@ Spring Boot 기반 REST API와 로컬 LLM(FastAPI + Ollama gemma3:4b)을 연동�
 | AI 검증 서버     | FastAPI (Python), Ollama, gemma4b(로컬 LLM)                         |
 | 이미지 업로드    | Cloudinary                                                           |
 | 빌드/관리        | Gradle                                                               |
-| 로깅             | LoggingInterceptor(AOP 유사 역할), Spring Logging, Hibernate SQL 로그 |
+| 로깅             | Interceptor 기반 요청 로깅 + AOP 기반 서비스 성능 로깅, Spring Logging, Hibernate SQL 로그 |
 
 > FastAPI + Ollama 서버는 별도의 Python 환경에서 실행됩니다.
 
@@ -104,7 +104,7 @@ trueDev/
 │  │  │   └─ springSecurity/     # JWT TokenProvider, Filter, SecurityConfig
 │  │  └─ resources/
 │  │      ├─ application.yml     # DB/Redis/LLM/FastAPI, Cloudinary 설정
-│  │      └─ logback.xml (선택)  # 로깅 설정
+│  │
 │  └─ test/java/...              # 테스트 코드
 └─ README.md                     # (이 문서)
 
