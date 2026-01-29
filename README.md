@@ -6,7 +6,7 @@ Spring Boot 기반 REST API와 로컬 LLM(FastAPI + Ollama gemma3:4b)을 연동�
 ## 🔗 Repository Links
 
 - Backend: https://github.com/Kimdonghyuk0/TrueDev-Backend
-- Frontend: https://github.com/Kimdonghyuk0/TrueDev-FrontEnd-
+- Frontend: https://github.com/Kimdonghyuk0/TrueDev-FrontEnd
 ---
 
 ## 🎥 시연영상
